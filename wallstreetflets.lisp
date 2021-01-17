@@ -4,6 +4,31 @@
 
 (in-package :wallstreetflets)
 
+(defun compute-greeks (option-value strike-price spot-price days-to-expiry)
+  (let* ((dte (/ days-to-expiry 365.0))
+	 (r (risk-free-rate dte))
+	 (volatility (iv option-value strike-price spot-price dte r))
+	 (d1 (d-one spot-price volatility strike-price r dte))
+	 (d2 (d-two volatility dte d1)))
+    (format t "~a~%" (delta d1))))
+
+(defun delta (d1)
+  (gaussian-cdf -6 d1))
+
+;; c = N(d1)S - N(d2)Ke^(-r*dte)
+(defun iv (val strike spot dte r)
+  "Implied Volatility via Newton's Method")
+
+(defun d-one (spot sigma strike r dte)
+  (/ (+ (log (/ spot strike))
+	(* (+ r (/ (expt sigma 2) 2)) dte))
+     (* sigma (sqrt dte))))
+
+(defun d-two (sigma dte d1)
+  (- d1 (* sigma (sqrt dte))))
+
+;;;utility functions
+
 (defparameter *url* "https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=yield")
 (defparameter *fallback-rate* 0.001) ;0.1%
 
@@ -32,8 +57,6 @@
 	 (n (position-if #'(lambda (x) (<= (/ term 365.0) x)) terms)))
     (linear-interpolate term (elt terms n) (elt terms (+ n 1)) (elt rates n) (elt rates (+ n 1)))))
 
-;;;utility functions
-
 (defun linear-interpolate (x x0 x1 y0 y1)
   (/ (+ (* y0 (- x1 x)) (* y1 (- x x0)))
      (- x1 x0)))
@@ -41,15 +64,14 @@
 (defun avg (a &rest rest)
   (/ (apply #'+ a rest) (+ 1 (length rest))))
 
-(defun gaussian-pdf (x &key (mu 0) (sigma 1))
-  "PDF of the Gaussian/Normal distribution"
-  (/ (exp (- (/ (expt (- x mu) 2)
-                (* 2 (expt sigma 2)))))
-     (* sigma (sqrt (* 2 pi)))))
+(defun gaussian-pdf (x)
+  "PDF of the Standard Gaussian/Normal distribution"
+  (/ (exp (- (/ (expt (- x) 2) 2)))
+     (sqrt (* 2 pi))))
 
-(defun gaussian-cdf (lo hi &key (mu 0) (sigma 1))
+(defun gaussian-cdf (lo hi)
   "Numeric approximation of the CDF of a gaussian/normal distribution"
-  (trap-int #'(lambda (n) (gaussian-pdf n :mu mu :sigma sigma)) lo hi))
+  (trap-int #'(lambda (n) (gaussian-pdf n)) lo hi))
 
 (defun trap-int (f lo hi &key (steps 2000))
   "Trapezoidal integral approximation"
