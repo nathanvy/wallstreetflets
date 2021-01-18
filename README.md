@@ -1,6 +1,6 @@
 # WALL STREET FLETS
 
-wallstreetflets (wsf) is a utility library to compute the so-called Greeks and other properties of derivative securities (specifically options) using the Black-Scholes model.
+wallstreetflets (wsf) is a utility library to compute the so-called Greeks and other properties of derivative securities (specifically options) using the [Black-Scholes model](https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model).
 
 ## Usage
 
@@ -25,6 +25,8 @@ CL-USER>
 ## Risk-Free Rate
 
 One of the inputs to the Black-Scholes model is the "risk-free rate" which is a theoretical value.  Customarily for US securities the interest rate on a US Treasury Bill with the same maturity is used as a proxy.  Wallstreetflets scrapes data from the US Treasury website to calculate the risk-free rate, but in the event the website cannot be reached or scraped, a fallback rate of 0.1% is used.
+
+Users can configure this fallback rate with the exported symbol `*fallback-rate*`.
 
 ## Disclaimers
 

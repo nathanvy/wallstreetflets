@@ -2,8 +2,7 @@
   (:nicknames :wsf)
   (:use :cl)
   (:documentation "Wall Street FLETs: Calculate Options Greeks based on scraped data")
-  (:export :compute-greeks
-	   :print-greeks))
+  (:export :compute-greeks :print-greeks :*fallback-rate*))
 
 (in-package :wallstreetflets)
 
