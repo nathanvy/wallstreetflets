@@ -16,20 +16,20 @@
 	 (d1 (d-one spot-price volatility strike-price r dte))
 	 (d2 (d-two volatility dte d1)))
     (list
-     'delta (delta d1 put)
-     'gamma (gamma d1 volatility spot-price dte)
-     'vega (vega d1 spot-price dte)
-     'theta (theta d1 d2 spot-price strike-price dte volatility r put)
-     'rho (rho d2 strike-price r dte put))))
+     :delta (delta d1 put)
+     :gamma (gamma d1 volatility spot-price dte)
+     :vega (vega d1 spot-price dte)
+     :theta (theta d1 d2 spot-price strike-price dte volatility r put)
+     :rho (rho d2 strike-price r dte put))))
 
 (defun print-greeks (volatility strike-price spot-price days-to-expiry &optional (put 'nil))
   "Computes the Greeks for the given Option and prints them to stdout.  If you want to consume this info programmatically then you probably want the function COMPUTE-GREEKS"
   (let* ((results (compute-greeks volatility strike-price spot-price days-to-expiry put)))
-    (format t "Delta: ~a~%" (getf results 'delta))
-    (format t "Gamma: ~a~%" (getf results 'gamma))
-    (format t "Vega: ~a~%" (getf results 'vega))
-    (format t "Theta: ~a~%" (getf results 'theta))
-    (format t "Rho: ~a~%" (getf results 'rho))))
+    (format t "Delta: ~a~%" (getf results :delta))
+    (format t "Gamma: ~a~%" (getf results :gamma))
+    (format t "Vega: ~a~%" (getf results :vega))
+    (format t "Theta: ~a~%" (getf results :theta))
+    (format t "Rho: ~a~%" (getf results :rho))))
 
 (defun delta (d1 &optional (put 'nil))
   (if put
