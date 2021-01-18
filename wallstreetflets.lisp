@@ -1,23 +1,77 @@
 (defpackage :wallstreetflets
   (:nicknames :wsf)
-  (:use :cl))
+  (:use :cl)
+  (:documentation "Wall Street FLETs: Calculate Options Greeks based on scraped data")
+  (:export :compute-greeks
+	   :print-greeks))
 
 (in-package :wallstreetflets)
 
-(defun compute-greeks (option-value strike-price spot-price days-to-expiry)
+(defvar *six-sigma* (- 6))
+
+(defun compute-greeks (volatility strike-price spot-price days-to-expiry &optional (put 'nil))
+  "Computes the Greeks for the given Option, as specified by the arguments, and returns them as a plist.  The final argument is optional and if set to T (true) will compute a Put option, otherwise a Call is assumed.  For a function that prints the calculated Greeks to stdout see PRINT-GREEKS"
   (let* ((dte (/ days-to-expiry 365.0))
 	 (r (risk-free-rate dte))
-	 (volatility (iv option-value strike-price spot-price dte r))
 	 (d1 (d-one spot-price volatility strike-price r dte))
 	 (d2 (d-two volatility dte d1)))
-    (format t "~a~%" (delta d1))))
+    (list
+     'delta (delta d1 put)
+     'gamma (gamma d1 volatility spot-price dte)
+     'vega (vega d1 spot-price dte)
+     'theta (theta d1 d2 spot-price strike-price dte volatility r put)
+     'rho (rho d2 strike-price r dte put))))
 
-(defun delta (d1)
-  (gaussian-cdf -6 d1))
+(defun print-greeks (volatility strike-price spot-price days-to-expiry &optional (put 'nil))
+  "Computes the Greeks for the given Option and prints them to stdout.  If you want to consume this info programmatically then you probably want the function COMPUTE-GREEKS"
+  (let* ((results (compute-greeks volatility strike-price spot-price days-to-expiry put)))
+    (format t "Delta: ~a~%" (getf results 'delta))
+    (format t "Gamma: ~a~%" (getf results 'gamma))
+    (format t "Vega: ~a~%" (getf results 'vega))
+    (format t "Theta: ~a~%" (getf results 'theta))
+    (format t "Rho: ~a~%" (getf results 'rho))))
 
-;; c = N(d1)S - N(d2)Ke^(-r*dte)
-(defun iv (val strike spot dte r)
-  "Implied Volatility via Newton's Method")
+(defun delta (d1 &optional (put 'nil))
+  (if put
+      (- (gaussian-cdf *six-sigma* d1) 1)
+      (gaussian-cdf *six-sigma* d1)))
+
+(defun gamma (d1 sigma spot tau)
+  (/ (gaussian-pdf d1)
+     (* spot sigma (sqrt tau))))
+
+(defun vega (d1 spot tau)
+  (* 0.01 spot (gaussian-pdf d1) (sqrt tau)))
+
+(defun theta (d1 d2 spot strike tau sigma r &optional (put 'nil))
+  (if put
+      (/ (+ (/ (* (- spot) (gaussian-pdf d1) sigma)
+	      (* 2 (sqrt tau)))
+	   (* r
+	      strike
+	      (exp (- (* r tau)))
+	      (gaussian-cdf *six-sigma* (- d2))))
+	 365)
+      (/ (- (/ (* (- spot) (gaussian-pdf d1) sigma)
+		       (* 2 (sqrt tau)))
+		    (* r
+		       strike
+		       (exp (- (* r tau)))
+		       (gaussian-cdf *six-sigma* d2)))
+		 365)))
+
+(defun rho (d2 strike r tau &optional (put 'nil))
+  (if put
+      (* 0.01
+	 (- strike)
+	 tau
+	 (exp (- (* r tau)))
+	 (gaussian-cdf *six-sigma* (- d2)))
+      (* 0.01
+	 strike
+	 tau
+	 (exp (- (* r tau)))
+	 (gaussian-cdf *six-sigma* d2))))
 
 (defun d-one (spot sigma strike r dte)
   (/ (+ (log (/ spot strike))
