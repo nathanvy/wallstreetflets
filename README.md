@@ -32,4 +32,4 @@ Users can configure this fallback rate with the exported symbol `*fallback-rate*
 
 There might be bugs herein that might cost you money.  Before investing carry out your own due diligence, including on the source code of this library.
 
-I develop on SBCL and may occasionally test this code on CCL.  No other Common Lisp implementations are tested.
+I develop primarily on/for SBCL and occasionally test this code on CCL.  No other Common Lisp implementations are tested but pull requests are welcome.
