@@ -2,7 +2,7 @@
   (:nicknames :wsf)
   (:use :cl)
   (:documentation "Wall Street FLETs: Calculate Options Greeks based on scraped data")
-  (:export :compute-greeks :print-greeks :*fallback-rate*))
+  (:export :compute-greeks :print-greeks :risk-free-rate :*fallback-rate*))
 
 (in-package :wallstreetflets)
 
@@ -83,7 +83,7 @@
 ;;;utility functions
 
 (defparameter *url* "https://www.treasury.gov/resource-center/data-chart-center/interest-rates/Pages/TextView.aspx?data=yield")
-(defparameter *fallback-rate* 0.001) ;0.1%
+(defparameter *fallback-rate* 0.015) ;1.5%
 
 (defun fetch-yield-rates ()
   "Scrapes US Treasury Bond yields for interpolation in another function"

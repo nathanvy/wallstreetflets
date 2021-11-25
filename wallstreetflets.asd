@@ -1,7 +1,7 @@
 (defsystem "wallstreetflets"
   :description "Wall Street FLETs:  A library for calculating Options Greeks"
-  :version "1.0"
+  :version "1.1"
   :licence "GPL v3"
-  :author "Nathan Van Ymeren <nathan.vany@gmail.com>"
+  :author "Nathan Van Ymeren <n@0x85.orgm>"
   :depends-on ("lquery" "dexador" "parse-number")
   :components ((:file "wallstreetflets")))
